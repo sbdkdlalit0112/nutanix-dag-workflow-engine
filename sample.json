@@ -1,0 +1,35 @@
+{
+	"tasks": {
+		"task_a": {
+			"name": "Task A",
+			"code": "const output = 2 + 2; console.log(output);",
+			"on_success": ["task_b", "task_c"],
+			"on_failure": []
+		},
+		"task_b": {
+			"name": "Task B",
+			"code": "const output = input_data.output * 3; console.log(output);",
+			"on_success": ["task_d"],
+			"on_failure": ["task_fallback"]
+		},
+		"task_c": {
+			"name": "Task C",
+			"code": "const output = 'hello' + input_data.output; console.log(output);",
+			"on_success": ["task_d"],
+			"on_failure": []
+		},
+		"task_d": {
+			"name": "Task D",
+			"code": "const output = input_data.output + 1; console.log(output);",
+			"on_success": [],
+			"on_failure": []
+		},
+		"task_fallback": {
+			"name": "Fallback Handler",
+			"code": "const output = 'Fallback executed due to failure'; console.log(output);",
+			"on_success": [],
+			"on_failure": []
+		}
+	},
+	"entry_points": ["task_a"]
+}
