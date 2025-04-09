@@ -3,27 +3,40 @@ from typing import Any
 from flask import Flask, request
 import requests
 
+from task_queue import TaskQueue
 from workflow_utils import Task, WorkflowInfo
 
 
 app = Flask(__name__)
+queue = TaskQueue()
 
-def load_sample_workflow_json() -> Any:
-    # import os
-    # print(os.getcwd())
+
+def load_sample_workflow_json() -> str:
     with open("./sample.json", "r") as f:
-        data = json.load(f)
+        data = f.read()
     return data
 
+
 workflow = WorkflowInfo(load_sample_workflow_json())
+
 
 @app.route("/receive", methods=["POST"])
 def receive():
     data = request.get_json()
     print("Received data:", data)
+
+    received_task = Task.from_dict(json.loads(data["task"]))
+    is_success = data["success"]
+
+    next_task_ids = received_task.on_success if is_success else received_task.on_failure
+    next_tasks = [workflow.tasks[task_id] for task_id in next_task_ids if task_id in workflow.tasks]
+
+    enqueue_tasks(next_tasks)
+
     return {"status": "ok"}
 
-@app.route("/") # will later use it to post workflow
+
+@app.route("/")  # will later use it to post workflow
 def index():
     # todo: accept workflow json from user
     # todo: store workflow in a database
@@ -31,12 +44,15 @@ def index():
     initial_tasks = workflow.get_initial_tasks()
     enqueue_tasks(initial_tasks)
 
-    tasks_info = "\n".join(f"{task_id}: {task}" for task_id, task in workflow.tasks.items())
-    
+    tasks_info = "\n".join(
+        f"{task_id}: {task}" for task_id, task in workflow.tasks.items())
+
     return f"<pre>{tasks_info}</pre>"
 
+
 def enqueue_tasks(tasks: list[Task]):
-    pass
+    for task in tasks:
+        queue.send_task(task)
 
 
 if __name__ == "__main__":

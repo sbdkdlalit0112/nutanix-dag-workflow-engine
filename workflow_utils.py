@@ -1,8 +1,13 @@
-from dataclasses import dataclass
-from typing import Literal
+from typing import List
+import json
+from enum import Enum
+from dataclasses import dataclass, asdict
 import uuid
 
-TaskKind = Literal["js", "python", "bash"]
+class TaskKind(str, Enum):
+    BASH = "bash"
+    PYTHON = "python"
+    JS = "js"
 
 
 @dataclass
@@ -11,8 +16,8 @@ class Task:
     description: str
     code: str
     kind: TaskKind
-    on_success: list[str]
-    on_failure: list[str]
+    on_success: List[str]
+    on_failure: List[str]
 
     def __repr__(self) -> str:
         return (
@@ -20,9 +25,31 @@ class Task:
             f"  name={self.name!r},\n"
             f"  description={self.description!r},\n"
             f"  kind={self.kind!r},\n"
+            f"  code={self.code!r},\n"
             f"  on_success={self.on_success},\n"
             f"  on_failure={self.on_failure}\n"
             f")"
+        )
+
+    def to_json(self) -> str:
+        data = asdict(self)
+        data['kind'] = self.kind.value  # Convert enum to string
+        return json.dumps(data)
+
+    @staticmethod
+    def from_json(jsonstr: str):
+        task_dict = json.loads(jsonstr)
+        return Task.from_dict(task_dict)
+    @staticmethod
+    def from_dict(task_dict: dict) -> "Task":
+        data = task_dict
+        return Task(
+            name=data["name"],
+            description=data.get("description", ""),
+            code=data["code"],
+            kind=TaskKind(data.get("kind", "bash")),  # Default to bash
+            on_success=data.get("on_success", []),
+            on_failure=data.get("on_failure", [])
         )
 
 
@@ -30,23 +57,16 @@ class WorkflowInfo:
     uid: str
     tasks: dict[str, Task]
 
-    def __init__(self, workflow_json: dict) -> None:
+    def __init__(self, workflow_str: str) -> None:
         self.uid = uuid.uuid4().hex[:8]
         self.tasks = {}
-        self.parse_workflow_json(workflow_json)
+        self.parse_workflow_json(workflow_str)
         self.validate_workflow_json()
     
-    def parse_workflow_json(self, workflow_json: dict) -> None:
-        for task_id, task_data in workflow_json.get("tasks", {}).items():
-            task = Task(
-                name=task_data["name"],
-                description=task_data.get("description", ""),
-                code=task_data["code"],
-                kind=task_data.get("kind", "bash"),  # default to "js" if not provided
-                on_success=task_data.get("on_success", []),
-                on_failure=task_data.get("on_failure", [])
-            )
-            self.tasks[task_id] = task
+    def parse_workflow_json(self, workflow_str: str) -> None:
+        workflow_dict = json.loads(workflow_str)
+        for task_id, task_data in workflow_dict.get("tasks", {}).items():
+            self.tasks[task_id] = Task.from_dict(task_data)
     
     def validate_workflow_json(self) -> None:
         # todo: ensure No loop in graph

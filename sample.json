@@ -1,35 +1,44 @@
 {
 	"tasks": {
-		"task_a": {
-			"name": "Task A",
-			"code": "const output = 2 + 2; console.log(output);",
-			"on_success": ["task_b", "task_c"],
+		"start": {
+			"name": "Start",
+			"description": "Entry point of the workflow",
+			"code": "print('Workflow started')",
+			"kind": "python",
+			"on_success": ["parse_data", "log_start"],
 			"on_failure": []
 		},
-		"task_b": {
-			"name": "Task B",
-			"code": "const output = input_data.output * 3; console.log(output);",
-			"on_success": ["task_d"],
-			"on_failure": ["task_fallback"]
+		"parse_data": {
+			"name": "Parse Data",
+			"description": "Processes data",
+			"code": "console.log('Parsing data in JS');",
+			"kind": "js",
+			"on_success": ["final_step"],
+			"on_failure": ["handle_parse_failure"]
 		},
-		"task_c": {
-			"name": "Task C",
-			"code": "const output = 'hello' + input_data.output; console.log(output);",
-			"on_success": ["task_d"],
+		"log_start": {
+			"name": "Log Start",
+			"description": "Logs the start using Bash",
+			"code": "echo 'Start logged'",
+			"kind": "bash",
+			"on_success": ["final_step"],
 			"on_failure": []
 		},
-		"task_d": {
-			"name": "Task D",
-			"code": "const output = input_data.output + 1; console.log(output);",
+		"handle_parse_failure": {
+			"name": "Handle Parse Failure",
+			"description": "Fallback if parsing fails",
+			"code": "echo 'Parse step failed!'",
+			"kind": "bash",
 			"on_success": [],
 			"on_failure": []
 		},
-		"task_fallback": {
-			"name": "Fallback Handler",
-			"code": "const output = 'Fallback executed due to failure'; console.log(output);",
+		"final_step": {
+			"name": "Final Step",
+			"description": "Concludes the workflow",
+			"code": "print('Final step completed')",
+			"kind": "python",
 			"on_success": [],
 			"on_failure": []
 		}
-	},
-	"entry_points": ["task_a"]
+	}
 }
