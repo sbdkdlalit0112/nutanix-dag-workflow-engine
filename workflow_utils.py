@@ -1,8 +1,9 @@
-from typing import List
+from typing import Any, List
 import json
 from enum import Enum
 from dataclasses import dataclass, asdict
 import uuid
+
 
 class TaskKind(str, Enum):
     BASH = "bash"
@@ -37,11 +38,12 @@ class Task:
         return json.dumps(data)
 
     @staticmethod
-    def from_json(jsonstr: str):
+    def from_json(jsonstr: str) -> "Task":
         task_dict = json.loads(jsonstr)
         return Task.from_dict(task_dict)
+
     @staticmethod
-    def from_dict(data: dict) -> "Task":
+    def from_dict(data: dict[str, Any]) -> "Task":
         return Task(
             name=data["name"],
             description=data.get("description", ""),
@@ -61,12 +63,12 @@ class WorkflowInfo:
         self.tasks = {}
         self.parse_workflow_json(workflow_str)
         self.validate_workflow_json()
-    
+
     def parse_workflow_json(self, workflow_str: str) -> None:
         workflow_dict = json.loads(workflow_str)
         for task_id, task_data in workflow_dict.get("tasks", {}).items():
             self.tasks[task_id] = Task.from_dict(task_data)
-    
+
     def validate_workflow_json(self) -> None:
         # todo: ensure No loop in graph
         pass
