@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Submit Workflow</title>
+</head>
+<body>
+    <h2>Submit Workflow JSON</h2>
+    <form id="workflowForm">
+        <textarea id="workflowInput" rows="20" cols="80" placeholder="Enter your JSON here..."></textarea><br>
+        <button type="submit">Submit</button>
+    </form>
+
+    <h3>Response</h3>
+    <div id="response"></div>
+
+    <script>
+        document.getElementById('workflowForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const jsonText = document.getElementById('workflowInput').value;
+            try {
+                const response = await fetch('/workflow', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ workflow: jsonText })
+                });
+                const result = await response.json();
+                document.getElementById('response').innerHTML = result.parsed;
+            } catch (err) {
+                document.getElementById('response').textContent = 'Error: ' + err;
+            }
+        });
+    </script>
+</body>
+</html>

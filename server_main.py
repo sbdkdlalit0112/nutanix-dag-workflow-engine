@@ -1,6 +1,6 @@
 import json
 from typing import Any
-from flask import Flask, request
+from flask import Flask, request, render_template
 
 from task_queue import TaskInfo, TaskQueue
 from workflow_utils import Task, WorkflowInfo
@@ -16,6 +16,7 @@ def load_sample_workflow_json() -> str:
     return data
 
 
+# todo: store workflow in a database
 workflow = WorkflowInfo(load_sample_workflow_json())
 
 
@@ -39,17 +40,27 @@ def receive() -> dict[Any, Any]:
 
 
 @app.route("/")  # will later use it to post workflow
-def index() -> str:
-    # todo: accept workflow json from user
-    # todo: store workflow in a database
+def home() -> str:
+    return '<h1>Welcome to the Workflow Engine</h1><p><a href="/submit_workflow">Submit a Workflow</a></p>'
 
+
+@app.route("/submit_workflow")
+def submit_workflow_form() -> str:
+    return render_template("workflow_input.html")
+
+@app.route("/workflow", methods=["POST"])
+def submit_workflow() -> dict[str, str]:
+    data = request.get_json()
+    # print("Workflow JSON received:", data["workflow"])
+    global workflow
+    workflow = WorkflowInfo(data["workflow"])
     initial_tasks = workflow.get_initial_tasks()
     enqueue_tasks([TaskInfo(task, {}) for task in initial_tasks])
 
     tasks_info = "\n".join(
         f"{task_id}: {task}" for task_id, task in workflow.tasks.items())
 
-    return f"<pre>{tasks_info}</pre>"
+    return {"parsed": f"<pre>{tasks_info}</pre>"}
 
 
 def enqueue_tasks(tasks: list[TaskInfo]) -> None:
