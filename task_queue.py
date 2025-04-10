@@ -45,7 +45,6 @@ class TaskQueue:
         self.connection = pika.BlockingConnection(
             pika.ConnectionParameters(self.host))
         self.channel = self.connection.channel()
-        self.channel.queue_purge(queue=self.queue_name)
         self.channel.queue_declare(queue=self.queue_name, durable=True)
 
     def _ensure_channel(self) -> None:
