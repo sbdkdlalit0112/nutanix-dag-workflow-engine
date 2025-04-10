@@ -5,24 +5,16 @@
 			"description": "Entry point of the workflow",
 			"code": "print('Workflow started')",
 			"kind": "python",
-			"on_success": ["parse_data", "log_start"],
+			"on_success": ["parse_data"],
 			"on_failure": []
 		},
 		"parse_data": {
 			"name": "Parse Data",
 			"description": "Processes data",
-			"code": "console.log('Parsing data in JS');",
+			"code": "console.log(JSON.stringify({a:5, b:3}));",
 			"kind": "js",
-			"on_success": ["final_step"],
+			"on_success": ["compute_prod"],
 			"on_failure": ["handle_parse_failure"]
-		},
-		"log_start": {
-			"name": "Log Start",
-			"description": "Logs the start using Bash",
-			"code": "echo 'Start logged'",
-			"kind": "bash",
-			"on_success": ["final_step"],
-			"on_failure": []
 		},
 		"handle_parse_failure": {
 			"name": "Handle Parse Failure",
@@ -32,12 +24,12 @@
 			"on_success": [],
 			"on_failure": []
 		},
-		"final_step": {
-			"name": "Final Step",
-			"description": "Concludes the workflow",
-			"code": "print('Final step completed')",
-			"kind": "python",
-			"on_success": [],
+		"compute_prod": {
+			"name": "Compute Product",
+			"description": "Calculates the product of two numbers",
+			"code": "const fs = require('fs');\nconst files = fs.readdirSync('./app');\nconsole.log('Files in directory:', files);\nlet data = JSON.parse(fs.readFileSync('./app/input.json', 'utf8'));\n\nconsole.log('---', data);\ndata=JSON.parse(data['Parse Data']);\nlet a = data.a;\nlet b = data.b;\nlet product = a * b;\nconsole.log('Product:', product);\n\n",
+			"kind": "js",
+			"on_success": ["final_step"],
 			"on_failure": []
 		}
 	}

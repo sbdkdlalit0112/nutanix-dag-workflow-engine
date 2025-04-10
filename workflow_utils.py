@@ -41,8 +41,7 @@ class Task:
         task_dict = json.loads(jsonstr)
         return Task.from_dict(task_dict)
     @staticmethod
-    def from_dict(task_dict: dict) -> "Task":
-        data = task_dict
+    def from_dict(data: dict) -> "Task":
         return Task(
             name=data["name"],
             description=data.get("description", ""),

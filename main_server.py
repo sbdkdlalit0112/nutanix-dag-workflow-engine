@@ -3,7 +3,7 @@ from typing import Any
 from flask import Flask, request
 import requests
 
-from task_queue import TaskQueue
+from task_queue import TaskInfo, TaskQueue
 from workflow_utils import Task, WorkflowInfo
 
 
@@ -27,9 +27,10 @@ def receive():
 
     received_task = Task.from_dict(json.loads(data["task"]))
     is_success = data["success"]
-
+    output_json = data.get("output", {})
     next_task_ids = received_task.on_success if is_success else received_task.on_failure
     next_tasks = [workflow.tasks[task_id] for task_id in next_task_ids if task_id in workflow.tasks]
+    next_tasks = [TaskInfo(task, {received_task.name: output_json}) for task in next_tasks]
 
     enqueue_tasks(next_tasks)
 
@@ -42,7 +43,7 @@ def index():
     # todo: store workflow in a database
 
     initial_tasks = workflow.get_initial_tasks()
-    enqueue_tasks(initial_tasks)
+    enqueue_tasks([TaskInfo(task, {}) for task in initial_tasks])
 
     tasks_info = "\n".join(
         f"{task_id}: {task}" for task_id, task in workflow.tasks.items())
@@ -50,7 +51,7 @@ def index():
     return f"<pre>{tasks_info}</pre>"
 
 
-def enqueue_tasks(tasks: list[Task]):
+def enqueue_tasks(tasks: list[TaskInfo]):
     for task in tasks:
         queue.send_task(task)
 

@@ -1,3 +1,4 @@
+import json
 import subprocess
 import tempfile
 import os
@@ -5,6 +6,7 @@ import uuid
 import shutil
 import requests
 
+from task_queue import TaskInfo
 from workflow_utils import Task, TaskKind
 
 LANG_INFO: dict[TaskKind, dict[str, str]] = {
@@ -29,31 +31,40 @@ LANG_INFO: dict[TaskKind, dict[str, str]] = {
 def get_lang_info(kind: TaskKind) -> dict[str, str]:
     return LANG_INFO.get(kind, LANG_INFO[TaskKind.BASH])
 
+def provision_folder(temp_dir: str, taskinf: TaskInfo, extension: str) -> None:
+    entrypt_file = f"entrypt.{extension}"
+    host_file_path = os.path.join(temp_dir, entrypt_file)
+    input_file_path = os.path.join(temp_dir, "input.json")
+    with open(host_file_path, "w") as f:
+        f.write(taskinf.task.code)
 
-def spawn_docker_vm_with_string(task: Task) -> tuple[bool, str]:
-    # Create a temp file and write the string
+    with open(input_file_path, "w") as f:
+        f.write(json.dumps(taskinf.input_jsons))
+    
+
+
+def spawn_docker_vm_with_string(taskinf: TaskInfo) -> tuple[bool, str]:
+    # Create a temp dir
     temp_dir = tempfile.mkdtemp()
     uid = "temp"
+    task = taskinf.task
     lang_info = get_lang_info(task.kind)
     runtime = lang_info["runtime"]
     image = lang_info["docker_image"]
+    suffix = lang_info["suffix"]
 
-    container_file_name = f"task_{uid}.{lang_info['suffix']}"
-    host_file_path = os.path.join(temp_dir, container_file_name)
-    with open(host_file_path, "w") as f:
-        f.write(task.code)
-
+    provision_folder(temp_dir, taskinf, suffix)
     container_name = f"vm_{uid}"
 
-    print("spawning...", task)
+    print("spawning...", taskinf)
 
     try:
         command = [
             "docker", "run", "--rm",
             "--name", container_name,
-            "-v", f"{host_file_path}:/app/{container_file_name}",
+            "-v", f"{temp_dir}:/app",
             image,
-            runtime, f"/app/{container_file_name}"
+            runtime, f"/app/entrypt.{suffix}"
         ]
         print("Command:", " ".join(command))
         result = subprocess.run(command, check=True,
@@ -80,22 +91,22 @@ def spawn_docker_vm_with_string(task: Task) -> tuple[bool, str]:
 # ))
 
 
-def handle_task_spawn_and_report(task: Task) -> None:
+def handle_task_spawn_and_report(taskinf: TaskInfo) -> None:
     """
     Spawn a task in a docker container and send feedback to main server.
     """
-    success, output = spawn_docker_vm_with_string(task)
+    success, output = spawn_docker_vm_with_string(taskinf)
     if success:
-        print(f"Task {task.name} executed successfully.")
+        print(f"Task {taskinf.task.name} executed successfully.")
         print(output)
     else:
-        print(f"Task {task.name} failed.")
+        print(f"Task {taskinf.task.name} failed.")
         print(output)
 
     payload = {
         "success": success,
         "output": output,
-        "task": task.to_json()
+        "task": taskinf.task.to_json()
     }
 
     try:
