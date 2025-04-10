@@ -1,19 +1,108 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>Submit Workflow</title>
+		<title>FlowCrux</title>
+		<style>
+			body {
+				font-family: Arial, sans-serif;
+				background: #f4f9fd;
+				color: #333;
+				margin: 20px;
+			}
+
+			h2, h3 {
+				color: #2b7a78;
+			}
+
+			textarea.rounded-textarea {
+				border: 2px solid #3aafa9;
+				border-radius: 12px;
+				padding: 10px;
+				transition: border-color 0.3s, box-shadow 0.3s;
+				font-size: 14px;
+				background-color: #ffffff;
+			}
+
+			textarea.rounded-textarea:focus {
+				border-color: #17252a;
+				box-shadow: 0 0 8px rgba(42, 157, 143, 0.4);
+				outline: none;
+			}
+
+			button.vibrant-button {
+				background-color: #3aafa9;
+				color: white;
+				border: none;
+				border-radius: 8px;
+				padding: 10px 20px;
+				font-size: 16px;
+				cursor: pointer;
+				transition: background-color 0.3s ease;
+			}
+
+			button.vibrant-button:hover {
+				background-color: #2b7a78;
+			}
+
+			#response, #outputs {
+				border: 1px solid #ccc;
+				border-radius: 10px;
+				padding: 12px;
+				background-color: #ffffff;
+				box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+				transition: box-shadow 0.3s;
+			}
+
+			#response:hover, #outputs:hover {
+				box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+			}
+
+			table {
+				width: 100%;
+				border-collapse: collapse;
+				margin-top: 10px;
+				border-radius: 10px;
+				overflow: hidden;
+			}
+
+			table th,
+			table td {
+				padding: 10px;
+				text-align: left;
+				border-bottom: 1px solid #ddd;
+			}
+
+			table th {
+				background-color: #3aafa9;
+				color: white;
+			}
+			
+			table tr:nth-child(even) {
+				background-color: #f2f2f2;
+			}
+			.heading {
+				text-align: center;
+				font-size: 42px;
+				color: #17252a;
+				margin-bottom: 20px;
+				text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+				letter-spacing: 1px;
+			}
+		</style>
 	</head>
 	<body>
+		<h1 class="heading">FlowCrux</h1>
 		<h2>Submit Workflow JSON</h2>
 		<form id="workflowForm">
 			<textarea
 				id="workflowInput"
+				class="rounded-textarea"
 				rows="20"
 				cols="80"
 				placeholder="Enter your JSON here..."
 			></textarea
 			><br />
-			<button type="submit">Submit</button>
+			<button type="submit" class="vibrant-button">Submit</button>
 		</form>
 
 		<h3>Response</h3>
