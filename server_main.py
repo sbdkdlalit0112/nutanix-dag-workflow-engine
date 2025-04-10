@@ -10,20 +10,14 @@ app = Flask(__name__)
 queue = TaskQueue()
 
 
-def load_sample_workflow_json() -> str:
-    with open("./sample.json", "r") as f:
-        data = f.read()
-    return data
-
 
 # todo: store workflow in a database
-workflow = WorkflowInfo(load_sample_workflow_json())
+workflow = WorkflowInfo("{}")
 
 
 @app.route("/receive", methods=["POST"])
 def receive() -> dict[Any, Any]:
     data = request.get_json()
-    print("Received data:", data)
 
     received_task = Task.from_dict(json.loads(data["task"]))
     is_success = data["success"]
@@ -66,7 +60,6 @@ def status() -> str:
 @app.route("/workflow", methods=["POST"])
 def submit_workflow() -> dict[str, str]:
     data = request.get_json()
-    # print("Workflow JSON received:", data["workflow"])
     global workflow
     workflow = WorkflowInfo(data["workflow"])
     initial_tasks = workflow.get_initial_tasks()

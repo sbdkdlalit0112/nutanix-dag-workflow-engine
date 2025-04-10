@@ -28,7 +28,7 @@ def main() -> None:
 
         ch.basic_ack(delivery_tag=method.delivery_tag)
 
-    channel.basic_qos(prefetch_count=1)  # Fair dispatch
+    channel.basic_qos(prefetch_count=3)  # Fair dispatch
     channel.basic_consume(queue=queue_name, on_message_callback=callback)
 
     print('Waiting for jobs. To exit press CTRL+C')

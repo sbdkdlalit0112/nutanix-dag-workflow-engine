@@ -7,7 +7,7 @@ import shutil
 import requests
 
 from task_queue import TaskInfo
-from workflow_utils import Task, TaskKind
+from workflow_utils import TaskKind
 
 LANG_INFO: dict[TaskKind, dict[str, str]] = {
     TaskKind.JS: {
@@ -31,6 +31,7 @@ LANG_INFO: dict[TaskKind, dict[str, str]] = {
 def get_lang_info(kind: TaskKind) -> dict[str, str]:
     return LANG_INFO.get(kind, LANG_INFO[TaskKind.BASH])
 
+
 def provision_folder(temp_dir: str, taskinf: TaskInfo, extension: str) -> None:
     entrypt_file = f"entrypt.{extension}"
     host_file_path = os.path.join(temp_dir, entrypt_file)
@@ -40,13 +41,12 @@ def provision_folder(temp_dir: str, taskinf: TaskInfo, extension: str) -> None:
 
     with open(input_file_path, "w") as f:
         f.write(json.dumps(taskinf.input_jsons))
-    
 
 
 def spawn_docker_vm_with_string(taskinf: TaskInfo) -> tuple[bool, str]:
     # Create a temp dir
     temp_dir = tempfile.mkdtemp()
-    uid = "temp"
+    uid = uuid.uuid4().__str__()
     task = taskinf.task
     lang_info = get_lang_info(task.kind)
     runtime = lang_info["runtime"]
@@ -56,17 +56,15 @@ def spawn_docker_vm_with_string(taskinf: TaskInfo) -> tuple[bool, str]:
     provision_folder(temp_dir, taskinf, suffix)
     container_name = f"vm_{uid}"
 
-    print("spawning...", taskinf)
-
     try:
         command = [
             "docker", "run", "--rm",
             "--name", container_name,
             "-v", f"{temp_dir}:/app",
             image,
-            runtime, f"/app/entrypt.{suffix}"
+            "bash", "-c", f"cd app && {runtime} entrypt.{suffix}"
         ]
-        print("Command:", " ".join(command))
+        print("Executing:", " ".join(command))
         result = subprocess.run(command, check=True,
                                 capture_output=True, text=True)
         print(result.stdout)
@@ -96,12 +94,12 @@ def handle_task_spawn_and_report(taskinf: TaskInfo) -> None:
     Spawn a task in a docker container and send feedback to main server.
     """
     success, output = spawn_docker_vm_with_string(taskinf)
-    if success:
-        print(f"Task {taskinf.task.name} executed successfully.")
-        print(output)
-    else:
-        print(f"Task {taskinf.task.name} failed.")
-        print(output)
+    # if success:
+    #     print(f"Task {taskinf.task.name} executed successfully.")
+    #     print(output)
+    # else:
+    #     print(f"Task {taskinf.task.name} failed.")
+    #     print(output)
 
     payload = {
         "success": success,

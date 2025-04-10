@@ -1,0 +1,44 @@
+{
+	"tasks": {
+		"start": {
+			"name": "start",
+			"description": "Entry point of the workflow",
+			"code": "print('Workflow started')",
+			"kind": "python",
+			"on_success": ["parse_data"],
+			"on_failure": []
+		},
+		"parse_data": {
+			"name": "parse_data",
+			"description": "Processes data",
+			"code": "console.log(JSON.stringify({a:5, b:3}));",
+			"kind": "js",
+			"on_success": ["compute_prod"],
+			"on_failure": ["handle_parse_failure"]
+		},
+		"handle_parse_failure": {
+			"name": "handle_parse_failure",
+			"description": "Fallback if parsing fails",
+			"code": "echo 'Parse step failed!'",
+			"kind": "bash",
+			"on_success": [],
+			"on_failure": []
+		},
+		"compute_prod": {
+			"name": "compute_prod",
+			"description": "Calculates the product of two numbers",
+			"code": "const fs = require('fs');\nconst files = fs.readdirSync('./');\n//console.log('Files in directory:', files);\nlet data = JSON.parse(fs.readFileSync('./input.json', 'utf8'));\n\n//console.log(data);\ndata=JSON.parse(data['parse_data']);\nlet a = data.a;\nlet b = data.b;\nlet product = a * b;\n//console.log('Product:', product);\n\nconsole.log(JSON.stringify({a:product, b:product}))",
+			"kind": "js",
+			"on_success": ["square"],
+			"on_failure": []
+		},
+		"square": {
+			"name": "square",
+			"description": "Calculates the product of two numbers",
+			"code": "const fs = require('fs');\nconst files = fs.readdirSync('./');\n//console.log('Files in directory:', files);\nlet data = JSON.parse(fs.readFileSync('./input.json', 'utf8'));\n\n//console.log(data);\ndata=JSON.parse(data['compute_prod']);\nlet a = data.a;\nlet b = data.b;\nlet product = a * b;\n//console.log('Product:', product);\n\nconsole.log(JSON.stringify({a:product, b:product}))",
+			"kind": "js",
+			"on_success": [""],
+			"on_failure": []
+		}
+	}
+}

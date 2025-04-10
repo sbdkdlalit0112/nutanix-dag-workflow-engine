@@ -32,27 +32,36 @@ class TaskInfo:
 
 class TaskQueue:
     queue_name: str
+    host: str
     connection: pika.BlockingConnection
     channel: pika.adapters.blocking_connection.BlockingChannel
 
     def __init__(self, queue_name: str = "job_queue", host: str = "localhost"):
         self.queue_name = queue_name
+        self.host = host
+        self._connect()
+
+    def _connect(self) -> None:
         self.connection = pika.BlockingConnection(
-            pika.ConnectionParameters(host))
+            pika.ConnectionParameters(self.host))
         self.channel = self.connection.channel()
-        self.channel.queue_purge(queue=queue_name)
-        self.channel.queue_declare(queue=queue_name, durable=True)
+        self.channel.queue_purge(queue=self.queue_name)
+        self.channel.queue_declare(queue=self.queue_name, durable=True)
+
+    def _ensure_channel(self) -> None:
+        if self.connection.is_closed or self.channel.is_closed:
+            print("RabbitMQ connection/channel closed, reconnecting...")
+            self._connect()
 
     def send_task(self, task: TaskInfo) -> None:
+        self._ensure_channel()
         message = task.to_json()
-        print("json -> ", message)
         self.channel.basic_publish(
             exchange='',
             routing_key=self.queue_name,
             body=message,
             properties=pika.BasicProperties(delivery_mode=2)
         )
-        print(f"Queued task: {task}")
 
     def close(self) -> None:
         self.connection.close()
