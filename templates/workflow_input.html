@@ -119,8 +119,8 @@
 					const res = await fetch("/workflow_status/"+workflow_id);
 					const data = await res.json();
 
-					if (data.status === "complete") {
-						clearInterval(pollInterval);
+					if (true) {
+						// clearInterval(pollInterval);
 
 						const outputDiv =
 							document.getElementById("outputs");
