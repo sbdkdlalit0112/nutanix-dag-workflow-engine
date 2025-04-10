@@ -1,77 +1,77 @@
 {
 	"tasks": {
 		"start": {
-			"name": "Start",
+			"name": "start",
 			"description": "Starting the workflow",
-			"code": "print(JSON.stringify({ x: 4, y: 2 }))",
+			"code": "import json\nprint(json.dumps({ 'x': 4, 'y': 2 }))",
 			"kind": "python",
 			"on_success": ["add"]
 		},
 		"manual_input": {
-			"name": "Manual Input",
+			"name": "manual_input",
 			"description": "Manually provided values",
 			"code": "echo '{\"m\": 3, \"n\": 7}'",
 			"kind": "bash",
 			"on_success": ["subtract"]
 		},
 		"init_data": {
-			"name": "Initialize Data",
+			"name": "init_data",
 			"description": "Initialize some constants",
 			"code": "console.log(JSON.stringify({ p: 10, q: 5 }))",
 			"kind": "js",
 			"on_success": ["divide"]
 		},
 		"add": {
-			"name": "Addition",
+			"name": "add",
 			"description": "Add x and y",
 			"code": "const fs = require('fs');\nlet raw = JSON.parse(fs.readFileSync('./input.json', 'utf8'));\nlet data = JSON.parse(raw['start']);\nlet sum = data.x + data.y;\nconsole.log(JSON.stringify({ sum }));",
 			"kind": "js",
 			"on_success": ["square"]
 		},
 		"subtract": {
-			"name": "Subtraction",
+			"name": "subtract",
 			"description": "Subtract m and n",
-			"code": "import json\nwith open('input.json') as f:\n data = json.load(f)\n vals = json.loads(data['manual_input'])\n print(json.dumps({\"diff\": vals['m'] - vals['n']}))",
+			"code": "import json\nwith open('input.json') as f:\n    data = json.load(f)\n    vals = json.loads(data['manual_input'])\n    print(json.dumps({\"diff\": vals['m'] - vals['n']}))",
 			"kind": "python",
 			"on_success": ["multiply"]
 		},
 		"divide": {
-			"name": "Division",
+			"name": "divide",
 			"description": "Divide p by q",
-			"code": "const fs = require('fs');\nlet raw = JSON.parse(fs.readFileSync('./input.json', 'utf8'));\nlet data = JSON.parse(raw['init_data']);\nlet div = data.p / data.q;\nconsole.log(JSON.stringify({ div }));",
+			"code": "const fs = require('fs');\nlet raw = JSON.parse(fs.readFileSync('./input.json', 'utf8'));\n//onsole.log({raw});\nlet data = JSON.parse(raw['init_data']);\nlet div = data.p / data.q;\nconsole.log(JSON.stringify({ div }));",
 			"kind": "js",
 			"on_success": ["modulus"]
 		},
 		"square": {
-			"name": "Square",
+			"name": "square",
 			"description": "Square the sum from add",
 			"code": "const fs = require('fs');\nlet raw = JSON.parse(fs.readFileSync('./input.json', 'utf8'));\nlet data = JSON.parse(raw['add']);\nlet sq = data.sum * data.sum;\nconsole.log(JSON.stringify({ sq }));",
 			"kind": "js",
 			"on_success": ["log_result"]
 		},
 		"multiply": {
-			"name": "Multiplication",
+			"name": "multiply",
 			"description": "Multiply diff by 10",
 			"code": "import json\nwith open('input.json') as f:\n data = json.load(f)\n d = json.loads(data['subtract'])\n print(json.dumps({\"prod\": d['diff'] * 10}))",
 			"kind": "python",
 			"on_success": ["log_result"]
 		},
 		"modulus": {
-			"name": "Modulus",
+			"name": "modulus",
 			"description": "p % 2 operation from divide result",
 			"code": "const fs = require('fs');\nlet raw = JSON.parse(fs.readFileSync('./input.json', 'utf8'));\nlet data = JSON.parse(raw['divide']);\nlet mod = data.div % 2;\nconsole.log(JSON.stringify({ mod }));",
 			"kind": "js",
 			"on_success": ["log_result"]
 		},
 		"log_result": {
-			"name": "Log Results",
+			"name": "log_result",
 			"description": "Log step results",
 			"code": "console.log('Result logging complete.')",
 			"kind": "js",
 			"on_success": ["end"]
 		},
 		"end": {
-			"name": "End",
+			"name": "end",
 			"description": "Workflow finished",
 			"code": "echo 'Workflow completed.'",
 			"kind": "bash",
