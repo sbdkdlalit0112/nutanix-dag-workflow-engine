@@ -1,36 +1,103 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <title>Submit Workflow</title>
-</head>
-<body>
-    <h2>Submit Workflow JSON</h2>
-    <form id="workflowForm">
-        <textarea id="workflowInput" rows="20" cols="80" placeholder="Enter your JSON here..."></textarea><br>
-        <button type="submit">Submit</button>
-    </form>
+	<head>
+		<title>Submit Workflow</title>
+	</head>
+	<body>
+		<h2>Submit Workflow JSON</h2>
+		<form id="workflowForm">
+			<textarea
+				id="workflowInput"
+				rows="20"
+				cols="80"
+				placeholder="Enter your JSON here..."
+			></textarea
+			><br />
+			<button type="submit">Submit</button>
+		</form>
 
-    <h3>Response</h3>
-    <div id="response"></div>
+		<h3>Response</h3>
+		<div id="response"></div>
 
-    <script>
-        document.getElementById('workflowForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const jsonText = document.getElementById('workflowInput').value;
-            try {
-                const response = await fetch('/workflow', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ workflow: jsonText })
-                });
-                const result = await response.json();
-                document.getElementById('response').innerHTML = result.parsed;
-            } catch (err) {
-                document.getElementById('response').textContent = 'Error: ' + err;
-            }
-        });
-    </script>
-</body>
+		<h3>Final Outputs</h3>
+		<pre id="outputs"></pre>
+
+		<script>
+			let pollInterval;
+
+			async function pollWorkflowStatus() {
+				try {
+					const res = await fetch("/workflow_status");
+					const data = await res.json();
+
+					if (data.status === "complete") {
+						clearInterval(pollInterval);
+
+						const outputDiv =
+							document.getElementById("outputs");
+						const outputs = data.info;
+
+						let table =
+							'<table border="1" cellpadding="6" cellspacing="0">';
+						table +=
+							"<tr><th>Task</th><th>Output</th></tr>";
+
+						for (const [task, output] of Object.entries(
+							outputs
+						)) {
+							table += `<tr><td>${task}</td><td>${output}</td></tr>`;
+						}
+						table += "</table>";
+
+						outputDiv.innerHTML = table;
+					} else {
+						document.getElementById(
+							"outputs"
+						).textContent = `Waiting... (${data.status})`;
+					}
+				} catch (err) {
+					clearInterval(pollInterval);
+					document.getElementById("outputs").textContent =
+						"Error polling status: " + err;
+				}
+			}
+
+			document
+				.getElementById("workflowForm")
+				.addEventListener("submit", async function (e) {
+					e.preventDefault();
+					const jsonText =
+						document.getElementById(
+							"workflowInput"
+						).value;
+
+					try {
+						const response = await fetch("/workflow", {
+							method: "POST",
+							headers: {
+								"Content-Type": "application/json",
+							},
+							body: JSON.stringify({
+								workflow: jsonText,
+							}),
+						});
+
+						const result = await response.json();
+						document.getElementById(
+							"response"
+						).innerHTML = result.parsed;
+
+						// Start polling
+						pollInterval = setInterval(
+							pollWorkflowStatus,
+							2000
+						); // every 2s
+					} catch (err) {
+						document.getElementById(
+							"response"
+						).textContent = "Error: " + err;
+					}
+				});
+		</script>
+	</body>
 </html>

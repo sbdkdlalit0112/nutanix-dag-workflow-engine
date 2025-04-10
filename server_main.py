@@ -28,6 +28,7 @@ def receive() -> dict[Any, Any]:
     received_task = Task.from_dict(json.loads(data["task"]))
     is_success = data["success"]
     output_json = data.get("output", {})
+    workflow.mark_task_completed(received_task, output_json)
     next_task_ids = received_task.on_success if is_success else received_task.on_failure
     next_tasks = [workflow.tasks[task_id]
                   for task_id in next_task_ids if task_id in workflow.tasks]
@@ -47,6 +48,20 @@ def home() -> str:
 @app.route("/submit_workflow")
 def submit_workflow_form() -> str:
     return render_template("workflow_input.html")
+
+
+@app.route("/workflow_status")
+def status() -> str:
+    if len(workflow.task_outputs) == len(workflow.tasks):
+        return json.dumps({
+            "status": f"{workflow.task_outputs}/{workflow.tasks}"
+        })
+
+    return json.dumps({
+        "status": "complete",
+        "info": workflow.task_outputs
+    })
+
 
 @app.route("/workflow", methods=["POST"])
 def submit_workflow() -> dict[str, str]:

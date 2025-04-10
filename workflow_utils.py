@@ -57,12 +57,14 @@ class Task:
 class WorkflowInfo:
     uid: str
     tasks: dict[str, Task]
+    task_outputs: dict[str, str]
 
     def __init__(self, workflow_str: str) -> None:
         self.uid = uuid.uuid4().hex[:8]
         self.tasks = {}
         self.parse_workflow_json(workflow_str)
         self.validate_workflow_json()
+        self.task_outputs = {}
 
     def parse_workflow_json(self, workflow_str: str) -> None:
         workflow_dict = json.loads(workflow_str)
@@ -83,3 +85,6 @@ class WorkflowInfo:
             all_task_ids -= set(task.on_failure)
 
         return [self.tasks[task_id] for task_id in all_task_ids if task_id in self.tasks]
+
+    def mark_task_completed(self, task: Task, output: str) -> None:
+        self.task_outputs[task.name] = output
