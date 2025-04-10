@@ -104,7 +104,8 @@ def handle_task_spawn_and_report(taskinf: TaskInfo) -> None:
     payload = {
         "success": success,
         "output": output,
-        "task": taskinf.task.to_json()
+        "task": taskinf.task.to_json(),
+        "workflow_id": taskinf.workflow_id
     }
 
     try:

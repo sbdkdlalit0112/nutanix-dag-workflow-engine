@@ -3,7 +3,7 @@
 		"start": {
 			"name": "start",
 			"description": "Entry point of the workflow",
-			"code": "print('Workflow started')",
+			"code": "import time\n\ntime.sleep(8)\nprint('Workflow started')\n",
 			"kind": "python",
 			"on_success": ["parse_data"],
 			"on_failure": []
@@ -15,14 +15,6 @@
 			"kind": "js",
 			"on_success": ["compute_prod"],
 			"on_failure": ["handle_parse_failure"]
-		},
-		"handle_parse_failure": {
-			"name": "handle_parse_failure",
-			"description": "Fallback if parsing fails",
-			"code": "echo 'Parse step failed!'",
-			"kind": "bash",
-			"on_success": [],
-			"on_failure": []
 		},
 		"compute_prod": {
 			"name": "compute_prod",

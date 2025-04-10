@@ -18,6 +18,7 @@ def main() -> None:
 
     def callback(ch: Any, method: Any, properties: Any, body: str) -> None:
         try:
+            print(body)
             task = TaskInfo.from_json(body)
         except json.JSONDecodeError:
             print('Received invalid JSON')

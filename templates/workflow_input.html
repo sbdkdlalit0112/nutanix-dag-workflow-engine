@@ -113,10 +113,10 @@
 
 		<script>
 			let pollInterval;
-
+			let workflow_id;
 			async function pollWorkflowStatus() {
 				try {
-					const res = await fetch("/workflow_status");
+					const res = await fetch("/workflow_status/"+workflow_id);
 					const data = await res.json();
 
 					if (data.status === "complete") {
@@ -175,6 +175,7 @@
 						document.getElementById(
 							"response"
 						).innerHTML = result.parsed;
+						workflow_id = result.workflow_id;
 
 						// Start polling
 						pollInterval = setInterval(

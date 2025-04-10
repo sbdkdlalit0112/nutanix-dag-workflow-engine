@@ -7,15 +7,18 @@ from workflow_utils import Task
 class TaskInfo:
     task: Task
     input_jsons: dict[str, str]
+    workflow_id: str
 
-    def __init__(self, task: Task, input_jsons: dict[str, str]):
+    def __init__(self, task: Task, input_jsons: dict[str, str], workflow_id: str):
         self.task = task
         self.input_jsons = input_jsons
+        self.workflow_id = workflow_id
 
     def to_json(self) -> str:
         data = {
             "task": self.task.to_json(),
-            "input_jsons": self.input_jsons
+            "input_jsons": self.input_jsons,
+            "workflow_id": self.workflow_id
         }
         return json.dumps(data)
 
@@ -24,7 +27,8 @@ class TaskInfo:
         data = json.loads(jsonstr)
         task = Task.from_json(data["task"])
         input_jsons = data["input_jsons"]
-        return TaskInfo(task, input_jsons)
+        workflow_id = data["workflow_id"]
+        return TaskInfo(task, input_jsons, workflow_id)
 
     def __repr__(self) -> str:
         return f"TaskInfo(task={self.task}, input_jsons={self.input_jsons})"
@@ -54,6 +58,7 @@ class TaskQueue:
 
     def send_task(self, task: TaskInfo) -> None:
         self._ensure_channel()
+        print("enque->", task.workflow_id)
         message = task.to_json()
         self.channel.basic_publish(
             exchange='',

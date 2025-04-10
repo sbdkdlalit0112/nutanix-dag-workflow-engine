@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import Any, Dict, List, TypedDict
 import json
 from enum import Enum
 from dataclasses import dataclass, asdict
@@ -53,8 +53,8 @@ class Task:
             on_failure=data.get("on_failure", [])
         )
 
-
-class WorkflowInfo:
+    
+class WorkflowInfo():
     uid: str
     tasks: dict[str, Task]
     task_outputs: dict[str, str]
@@ -85,6 +85,13 @@ class WorkflowInfo:
             all_task_ids -= set(task.on_failure)
 
         return [self.tasks[task_id] for task_id in all_task_ids if task_id in self.tasks]
+    
+    def to_dict(self) -> dict:
+        return {
+            "uid": self.uid,
+            "tasks": {task_id: json.loads(task.to_json()) for task_id, task in self.tasks.items()},
+            "task_outputs": self.task_outputs
+        }
 
-    def mark_task_completed(self, task: Task, output: str) -> None:
-        self.task_outputs[task.name] = output
+def mark_task_completed(doc: dict, task: Task, output: str) -> None:
+    doc["task_outputs"][task.name] = output
