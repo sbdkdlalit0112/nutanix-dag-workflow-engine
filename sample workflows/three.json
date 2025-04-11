@@ -1,0 +1,29 @@
+{
+    "tasks": {
+        "start": {
+            "name": "start",
+            "description": "Starting the workflow",
+            "code": "console.log('Workflow initiated.');",
+            "kind": "js",
+            "on_success": [
+                "rest_api_call"
+            ]
+        },
+        "rest_api_call": {
+            "name": "rest_api_call",
+            "description": "Calls a REST API and logs the response",
+            "code": "fetch('https://jsonplaceholder.typicode.com/posts/1')\n  .then(response => response.json())\n  .then(data => {\n    console.log('API Response:', data);\n  })\n  .catch(error => {\n    console.error('Fetch error:', error);\n  });",
+            "kind": "js",
+            "on_success": [
+                "end"
+            ]
+        },
+        "end": {
+            "name": "end",
+            "description": "Workflow finished",
+            "code": "console.log('Workflow complete.');",
+            "kind": "js",
+            "on_success": []
+        }
+    }
+}
